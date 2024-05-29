@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from rest_framework import status
 from rest_framework.views import APIView
 from .serializers import CategorySerializer, AuthorSerializer, BookSerializer
 
@@ -35,3 +36,65 @@ class Bookdetail(APIView):
         book = Books.objects.get(id=pk)
         serializer = BookSerializer(book, many=False)
         return Response(serializer.data)
+
+
+class BookDelete(APIView):
+    def delete(self, request, pk):
+        try:
+            books=Books.objects.get(id=pk)
+            books.delete()
+            serializer_data = {
+                "books":"deleted successfully",
+                "status":"success",
+                "status_code":status.HTTP_200_OK,
+            }
+        except Exception as e:
+            serializer_data = {
+                "error":str(e),
+                "status":"failed",
+                "status_code":status.HTTP_404_NOT_FOUND,
+            }
+        finally:
+            return Response(serializer_data)
+
+
+class BookUpdate(APIView):
+    def put(self, request, pk):
+        try:
+            books=Books.objects.get(id=pk)
+            serializer = BookSerializer(books, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                serializer_data = {
+                    "books":"updated successfully",
+                    "status":"success",
+                    "status_code":status.HTTP_200_OK,
+                }
+        except Exception as e:
+            serializer_data = {
+                "error":str(e),
+                "status":"failed",
+                "status_code":status.HTTP_404_NOT_FOUND,
+            }
+        finally:
+            return Response(serializer_data)
+
+    def patch(self, request, pk):
+        try:
+            books=Books.objects.get(id=pk)
+            serializer = BookSerializer(books, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                serializer_data = {
+                    "books":"updated successfully",
+                    "status":"success",
+                    "status_code":status.HTTP_200_OK,
+                }
+        except Exception as e:
+            serializer_data = {
+                "error":str(e),
+                "status":"failed",
+                "status_code":status.HTTP_404_NOT_FOUND,
+            }
+        finally:
+            return Response(serializer_data)
